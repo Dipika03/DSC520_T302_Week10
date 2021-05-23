@@ -1,0 +1,209 @@
+---
+title: "Final Project Step 2"
+author: "Dipika Sharma"
+date: May 23, 2021
+output:
+  
+  pdf_document: default
+  html_document: default
+  word_document: default
+bibliography: bibliography.bib
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+## Add Citations
+
+* R for Everyone [@lander2014r]
+* Discovering Statistics Using R [@field2012discovering]
+
+## How to import and clean my data?
+
+For the Data Acquisition step, I am gathering data from link https://raw.githubusercontent.com/fivethirtyeight/data/master/bad-drivers/bad-drivers.csv using the read.csv.
+
+```{r include=TRUE}
+bad_drivers <- read.csv("https://raw.githubusercontent.com/fivethirtyeight/data/master/bad-drivers/bad-drivers.csv")
+
+```
+
+We can learn about the structure of our data using str function
+
+```{r include=TRUE}
+str(bad_drivers)
+```
+
+As we can see we have 8 different columns for 51 states of United State. I will rename the column as it is currently very long and it is always preferable to use small and meaningfull name of the columns.
+
+```{r include=TRUE}
+library(dplyr)
+baddrivers_df <- bad_drivers %>% 
+  rename(driver_fatalities = "Number.of.drivers.involved.in.fatal.collisions.per.billion.miles", 
+         speeding_percent = "Percentage.Of.Drivers.Involved.In.Fatal.Collisions.Who.Were.Speeding", 
+         alcohol_percent = "Percentage.Of.Drivers.Involved.In.Fatal.Collisions.Who.Were.Alcohol.Impaired", 
+         not_distracted_percent = "Percentage.Of.Drivers.Involved.In.Fatal.Collisions.Who.Were.Not.Distracted", 
+         no_prior_accident_percent = "Percentage.Of.Drivers.Involved.In.Fatal.Collisions.Who.Had.Not.Been.Involved.In.Any.Previous.Accidents", 
+         insurance_premiums = "Car.Insurance.Premiums....", 
+         insurance_companies_losses = "Losses.incurred.by.insurance.companies.for.collisions.per.insured.driver....")
+ 
+str(baddrivers_df)
+```
+
+## What does the final data set look like?
+
+To have the better idea we can look at some of the data using head function. Also check the complete data to see if we have any nulls in the data. for now I checked already we do not have any NULLS so we are fine.
+
+```{r include=TRUE}
+head(baddrivers_df)
+
+tail(baddrivers_df)
+```
+
+## Questions for future steps.
+
+I am planning to cover following questions in future steps:
+
+1. Which states have the bad drivers?
+2. Which State has best drivers?
+3. Which States has maximum fata collision and which has less?
+3. Which states has more car Insurance premium and which has less?
+4. Which States Insurance company incurred losses?
+
+
+## What information is not self-evident?
+
+Using the current data set we cannot say anything about the road condition of each state. Also there is no evident about the weather condition when collision happened. These two factors plays important role when comes to road accident as they can also be the reason of collision and if so in that case we cannot say drivers are bad.
+There is also no information about the region in a data set. I think it would be interesting to see which region has worst drivers?
+
+## What are different ways you could look at this data?
+
+I am planning to look at every aspect of the data to see and understand which states has worst driver in United States. I will try to use each column to see its relations with collision in states. With the help of different plots and function available in R, it will be easier for me to get information from data.
+
+## How could you summarize your data to answer key questions?
+
+```{r include=TRUE}
+str(baddrivers_df)
+```
+
+Using the str function I can see the structure of the bad drivers data set, it is giving me the idea about the classes of the 8 variable and the number of obseravtion is 51
+
+```{r include=TRUE}
+head(baddrivers_df)
+```
+
+Head function will give me better idea about the data stored in 8 variables.
+
+```{r include=TRUE}
+summary(baddrivers_df)
+```
+
+We already saw using str and head fucntion that bad drivers dataframe is 51 observations of the 8 variables. Now in order to get a better idea of the distribution of your variables in the dataset I am using the summary function. it will give me the descriptive statistic of each variable in data set. By looking at the function output we can see the mean, median or range of the numerical variables this will give us better understanding of what plots I can use, what will be the range and others. 
+
+
+## What types of plots and tables will help you to illustrate the findings to your questions?
+
+## state vs Number of fatal collision
+
+The first plot I want to analyze is state vs Number of fatal collision, It will tell me which state has most collision and which has minimum collision for every billion miles traveled
+
+```{r include=TRUE}
+library(ggplot2)
+ggplot(baddrivers_df,aes(x=reorder(State,- driver_fatalities), y = driver_fatalities, fill=State) )+
+  geom_bar(stat = "identity")+
+  xlab("States")+
+  ylab("Number of Collisions")+
+  ggtitle("Number of fatal collisions in each state")+
+  guides(fill = FALSE) +
+  theme(axis.text.x=element_text(angle=90,hjust=0.2,vjust=0.2))
+```
+
+Looking at the graph we can clearly see that North Dakota and South Carolina have most fatal collision of 23.9 where as District of Columbia has less collision of 5.9 for every billion miles traveled. 
+
+```{r include=TRUE}
+summary(baddrivers_df$driver_fatalities)
+```
+
+Looking at the average of driver fatalities we can see the fatal collision count in state North Dakota and South Carolina is higher then the average collision.
+
+## State vs car Insurance Premium
+
+I am using ggplot to see Car Insurance premium of all 51 states of United State.
+It will give us the blink of data and also the understanding of car insurance premium works in different states.
+
+```{r include=TRUE}
+library(ggplot2)
+baddrivers_df %>% ggplot(aes(x=reorder(State, -`insurance_premiums`), y=`insurance_premiums`, fill=State)) + 
+  geom_bar(stat = "identity") + 
+  guides(fill = FALSE) +
+  theme(axis.text.x = element_text(angle = 60, hjust = 1))
+```
+
+```{r include=TRUE}
+summary(baddrivers_df$insurance_premiums)
+```
+
+
+Looking at the plot we can stat that Idaho state has less car insurance premium of 642 where as the New Jersey state has highest car insurance premium 1301.5 which is higher from the average i.e. 859.
+
+## Distribution of driver_fatalities and Car Insurance Premium.
+
+```{r include=TRUE}
+hist(baddrivers_df$driver_fatalities)
+```
+
+Looking at the above histogram we can see that the distribution bi-model, slightly left skewed. Also we can see the 
+that District of Columbia is an outlier with less number of collision.
+
+
+```{r include=TRUE}
+hist(baddrivers_df$insurance_premiums)
+```
+
+This distribution of car insurance premium is skewed right and unimodal.
+
+## State vs Insurance company losses
+
+```{r include=TRUE}
+ggplot(baddrivers_df,aes(x=reorder(State,- insurance_companies_losses), y= insurance_companies_losses, fill=State) )+
+  geom_bar(stat = "identity")+
+  xlab("States")+
+  ylab("Amount")+
+  ggtitle("Loss Incurred by Insurance Company")+
+  guides(fill = FALSE) +
+  theme(axis.text.x=element_text(angle=90,hjust=0.2,vjust=0.2))
+```
+
+```{r include=TRUE}
+summary(baddrivers_df$insurance_companies_losses)
+```
+
+The above plot stat that Louisiana state has most expensive losses incurred by insurance company of 194.78 where as Idaho state has less losses incurred by insurance company of 82.75. The average losses incurred is 136.05.
+
+
+Lets try to understand if we have any relationship between fatal collision and insurance premium. For this I am using the linear regression model.
+
+```{r include=TRUE}
+lm_df <- lm(formula = insurance_premiums ~ driver_fatalities , data = baddrivers_df)
+summary(lm_df)
+```
+
+By looking at the summary of linear regression model we can say the driver collision is strongly associated with Car insurance premium as they shwing low p value and also the driver fatalities estimate value is -8.638 which show how it Car Insurance related and how much car Insurance will get effected with fatal collision.
+
+Since there is a relationship between Car Insurance and fatal collision we can say that we have good drivers in Idaho as its Car Insurance premium is low , also the losses incurred by Insurance company is also low compare to all state Where as North Dakota, South Carolina, New jersey and Louisiana has worst drivers in United State.
+
+## Do you plan on incorporating any machine learning techniques to answer your research questions? Explain.
+
+Yes I have used the linear regression to find out the relationship between the continuous variable, one is dependent variable and other is independent variable. In our case the dependent variable is Car Insurance premium and independent variable is Driver fatalities. This relationship help me to achieve my goal of getting answer to my question which state has worst drivers?
+
+## Questions for future steps.
+
+I would love to see the given data by region to find out which region of United States has worst drivers and which has best drivers? Also it would be interesting to see how the weather condition and road condition can change my analysis. So for future research I want to used region dataframe along with dataframes which has weather and roads information in it.
+
+## Refrences

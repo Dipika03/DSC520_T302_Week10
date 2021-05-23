@@ -1,0 +1,137 @@
+---
+title: "Exercise 10.2"
+author: "Dipika Sharma"
+date: May 23, 2021
+output:
+  
+  pdf_document: default
+  html_document: default
+  word_document: default
+bibliography: bibliography.bib
+---
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+## Add Citations
+
+* R for Everyone [@lander2014r]
+* Discovering Statistics Using R [@field2012discovering]
+
+## a For this problem, you will be working with the thoracic surgery data set from the University of California Irvine machine learning repository. This dataset contains information on life expectancy in lung cancer patients after surgery. The underlying thoracic surgery data is in ARFF format. This is a text-based format with information on each of the attributes. You can load this data using a package such as foreign or by cutting and pasting the data section into a CSV file.
+
+```{r include=TRUE}
+
+setwd("/Users/dipikasharma/R_Projects/DSC520")
+library(foreign)
+library(caTools)
+patient_data <- read.arff("data/ThoraricSurgery.arff")
+
+# Split the data
+split <- sample.split(patient_data, SplitRatio = 0.8)
+train <- subset(patient_data, split == 'TRUE')
+test <- subset(patient_data, split == 'FALSE')
+
+```
+
+## b i Fit a binary logistic regression model to the data set that predicts whether or not the patient survived for one year (the Risk1Y variable) after the surgery. Use the glm() function to perform the logistic regression. See Generalized Linear Models for an example. Include a summary using the summary() function in your results.
+
+```{r include=TRUE}
+# Converting the Risk1yr variabke to factors
+patient_data$Risk1Yr <- as.factor(patient_data$Risk1Yr)
+
+fit <- glm(Risk1Yr ~ ., data = train, family = binomial)
+anova(fit, test = "Chisq")
+summary(fit)
+```
+
+## b ii According to the summary, which variables had the greatest effect on the survival rate?
+
+Looking at the anova function data we can see the drop of deviance when adding each variable one at a time. Also above data indicate that by adding DGN, PRE10, PRE9, PRE14, PRE30 reduces the residual more compare to when it reduces by adding other variables.
+
+```{r include=TRUE}
+a2Pval <- summary(fit)$coef[,"Estimate"]
+a2Pval
+
+```
+
+As we know we can see the correlation between the two variables with this linear model, and linear model is written using equation y = mx + b form. In the above case we have below
+Risk1yr = columnname * estimate + Intercept
+We can see estimate value is directly proportional to Risk1yr and that is the only value which is different for all the columns. Out of all values, we can say DGN, PRE19, PRE32, PRE9T, PRE30, PRE10 are related to dependent variable.
+increase or decrease of these variables will effect the dependent variable.
+
+```{r include=TRUE}
+a2Pval <- summary(fit)$coef[,"Pr(>|z|)", drop=F]
+a2Pval
+```
+
+Also PRE9 has the lowest p-value which can suggest a strong association of the PRE9 of the patient with the probability of having risk.
+
+Overall all these variable DGN, PRE19, PRE32, PRE9T, PRE30, PRE10 have effect on survival rate.
+
+## b iii To compute the accuracy of your model, use the dataset to predict the outcome variable. The percent of correct predictions is the accuracy of your model. What is the accuracy of your model?
+
+```{r include=TRUE}
+# Run the test data through the model
+res <- predict(fit, test, type = 'response')
+res
+
+res <- predict(fit, train, type = 'response')
+res
+
+# Validate the model - confusion matrix
+confmatrix <- table(Actual_Value=train$Risk1Yr, Predicted_Value = res > 0.5)
+confmatrix
+
+# Accuracy
+(confmatrix[[1,1]] + confmatrix[[2,2]]) / sum(confmatrix)
+
+```
+
+We can see that we did well, accuracy of the model is 86.6 %.
+
+## 2 a. Fit a logistic regression model to the binary-classifier-data.csv dataset
+
+```{r include=TRUE}
+## Set the working directory to the root of your DSC 520 directory
+setwd("/Users/dipikasharma/R_Projects/DSC520")
+
+## Load the `data/r4ds/heights.csv` to
+Binary_df <- read.csv("data/binary-classifier-data.csv")
+split <- sample.split(Binary_df, SplitRatio = 0.8)
+split
+train_df <- subset(Binary_df, split == 'TRUE')
+test_df <- subset(Binary_df, split == 'FALSE')
+Binary_df$label <- as.factor(Binary_df$label)
+
+fit_df <- glm(label ~ ., data = train_df, family = binomial)
+summary(fit_df)
+```
+
+## 2 b. The dataset (found in binary-classifier-data.csv) contains three variables; label, x, and y. The label variable is either 0 or 1 and is the output we want to predict using the x and y variables.
+
+```{r include=TRUE}
+res1 <- predict(fit_df, test_df, type = 'response')
+res1
+
+res1 <- predict(fit_df, train_df, type = 'response')
+res1
+# Validate the model - confusion matrix
+confmatrix <- table(Actual_Value=train_df$label, Predicted_Value = res1 > 0.5)
+confmatrix
+```
+
+## 2 b i. What is the accuracy of the logistic regression classifier?
+
+```{r include=TRUE}
+# Accuracy
+(confmatrix[[1,1]] + confmatrix[[2,2]]) / sum(confmatrix)
+
+```
+
+The Accuracy is 57.5 % of the logistic regression.
+
+## Refrences
